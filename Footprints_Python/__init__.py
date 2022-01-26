@@ -11,10 +11,35 @@ class Connection(object):
         hostname,
         user,
         pwd) -> None:
-        
+        '''
+        Starts a connection to the foot prints server.
+        '''
         self.url = f'https://{hostname}/MRcgi/MRWebServices.pl'
         self.user = user
         self.pwd = pwd
+
+
+    def requesting(self, data, action):
+        '''
+        Submits request to the footprints server.
+        Returns response.
+        '''
+        data = data.encode('utf-8')
+        headers = {
+            'SOAPAction' : f'MRWebServices#MRWebServices__{action}',
+            'Content-Type' : 'text/xml; charset=utf-8',
+            'Content-Length' : f'{len(data)}'
+        }
+        return requests.request('POST', self.url, headers=headers, data=data)
+
+
+    def requesting_dict(self, data, action):
+        '''
+        Converts requested response to a dictionary for easier manipulation.
+        Returns a filtered response
+        '''
+        response = xmltodict.parse(self.requesting(data, action).text)
+        return response['soap:Envelope']['soap:Body'][f'namesp1:MRWebServices__{action}Response']['return']
 
 
     def soap_envelope(self, data):
@@ -35,27 +60,10 @@ class Connection(object):
         '''
 
 
-    def requesting(self, data, action):
-        '''
-        '''
-        data = data.encode('utf-8')
-        headers = {
-            'SOAPAction' : f'MRWebServices#MRWebServices__{action}',
-            'Content-Type' : 'text/xml; charset=utf-8',
-            'Content-Length' : f'{len(data)}'
-        }
-        return requests.request('POST', self.url, headers=headers, data=data)
-
-
-    def requesting_dict(self, data, action):
-        '''
-        '''
-        reponse = xmltodict.parse(self.requesting(data, action).text)
-        return reponse['soap:Envelope']['soap:Body'][f'namesp1:MRWebServices__{action}Response']['return']
-
-
     def get_ticket_details(self, project_id, ticket_id):
         '''
+        Requests information about a ticket.
+        Returns Ticket(class).
         '''
         action = 'getIssueDetails'
         data = f'''
@@ -88,6 +96,8 @@ class Connection(object):
 
     def search_tickets(self, key, project_id):
         '''
+        Requests information about a key word in the title of all the tickets.
+        Returns a list of Tickets(class).
         '''
         action = 'search'
         query = f"SELECT mrid, mrtitle, mrstatus from MASTER{project_id} WHERE mrtitle LIKE '%{key}%'"
@@ -118,6 +128,9 @@ class Ticket(dict):
         self.id = id
     
     def info(self):
+        '''
+        Returns a dictionary of the class.
+        '''
         return self.__dict__
 
 
