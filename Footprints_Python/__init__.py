@@ -2,6 +2,7 @@
 First Attempt at a class
 '''
 import requests
+from base64 import b64decode
 import xmltodict
 
 
@@ -83,13 +84,22 @@ class Connection(object):
         ticket = Ticket(ticket_id)
         ticket.title = ticket_dict['title']['#text']
         ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
-        ticket.contact_title = ticket_dict['Position__bTitle']['#text']
-        ticket.building = ticket_dict['Campus__bBuilding']['#text']
+        ticket.contact_title = ticket_dict['title']['#text']
         ticket.status = ticket_dict['status']['#text']
+        if '#text' in ticket_dict['Campus__bBuilding'].keys():
+            ticket.building = ticket_dict['Campus__bBuilding']['#text']
         if '#text' in ticket_dict['description'].keys():
-            ticket.details = ticket_dict['description']['#text']
+            ticket.notes = ticket_dict['description']['#text']
         if '#text' in ticket_dict['Tech__bNotes'].keys():
-            ticket.tech_details = ticket_dict['Tech__bNotes']['#text']
+            if 'xsd:base64Binary' in ticket_dict['Tech__bNotes'].values():
+                ticket.full_notes = str(b64decode(ticket_dict['alldescs']['#text']))
+            else:
+                ticket.tech_notes = ticket_dict['Tech__bNotes']['#text']
+        if '#text' in ticket_dict['alldescs'].keys():
+            if 'xsd:base64Binary' in ticket_dict['alldescs'].values():
+                ticket.full_notes = str(b64decode(ticket_dict['alldescs']['#text']))
+            else:
+                ticket.full_notes = ticket_dict['alldescs']['#text']
 
         return ticket
 
