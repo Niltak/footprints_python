@@ -17,6 +17,24 @@ class Connection(object):
         self.pwd = pwd
 
 
+    def soap_envelope(self, data):
+        '''
+        Template of the required information around the data requested.
+        Returns data inside the template.
+        '''
+        return f'''
+            <SOAP-ENV:Envelope
+                xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                xmlns:namesp2="http://xml.apache.org/xml-soap"
+                xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
+                    <SOAP-ENV:Header/>
+                    <SOAP-ENV:Body>{data}</SOAP-ENV:Body>
+            </SOAP-ENV:Envelope>
+        '''
+
+
     def requesting(self, data, action):
         '''
         '''
@@ -32,8 +50,6 @@ class Connection(object):
     def requesting_dict(self, data, action):
         '''
         '''
-        # might require below in the furture
-        # list(reponse['soap:Envelope']['soap:Body'].keys())[0]
         reponse = xmltodict.parse(self.requesting(data, action).text)
         return reponse['soap:Envelope']['soap:Body'][f'namesp1:MRWebServices__{action}Response']['return']
 
@@ -43,25 +59,15 @@ class Connection(object):
         '''
         action = 'getIssueDetails'
         data = f'''
-        <SOAP-ENV:Envelope
-            xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
-            xmlns:namesp2="http://xml.apache.org/xml-soap"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
-                <SOAP-ENV:Header/>
-                <SOAP-ENV:Body>
-                    <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
-                        <user xsi:type="xsd:string">{self.user}</user>
-                        <password xsi:type="xsd:string">{self.pwd}</password>
-                        <extrainfo xsi:type="xsd:string"/>
-                        <projectnumber xsi:type="xsd:int">{project_id}</projectnumber>
-                        <mrid xsi:type="xsd:int">{ticket_id}</mrid>
-                    </namesp1:MRWebServices__{action}>
-                </SOAP-ENV:Body>
-        </SOAP-ENV:Envelope>
+            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
+                <user xsi:type="xsd:string">{self.user}</user>
+                <password xsi:type="xsd:string">{self.pwd}</password>
+                <extrainfo xsi:type="xsd:string"/>
+                <projectnumber xsi:type="xsd:int">{project_id}</projectnumber>
+                <mrid xsi:type="xsd:int">{ticket_id}</mrid>
+            </namesp1:MRWebServices__{action}>
         '''
-
+        data = self.soap_envelope(data)
         ticket_dict = self.requesting_dict(data, action)
         if not ticket_dict:
             return False
@@ -85,25 +91,16 @@ class Connection(object):
         '''
         action = 'search'
         query = f"SELECT mrid, mrtitle, mrstatus from MASTER{project_id} WHERE mrtitle LIKE '%{key}%'"
-        # query = f"SELECT * FROM *"
+        
         data = f'''
-        <SOAP-ENV:Envelope
-            xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
-            xmlns:namesp2="http://xml.apache.org/xml-soap"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
-                <SOAP-ENV:Header/>
-                <SOAP-ENV:Body>
-                    <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
-                        <user xsi:type="xsd:string">{self.user}</user>
-                        <password xsi:type="xsd:string">{self.pwd}</password>
-                        <extrainfo xsi:type="xsd:string"/>
-                        <query xsi:type="xsd:string">{query}</query>
-                    </namesp1:MRWebServices__{action}>
-                </SOAP-ENV:Body>
-        </SOAP-ENV:Envelope>
+            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
+                <user xsi:type="xsd:string">{self.user}</user>
+                <password xsi:type="xsd:string">{self.pwd}</password>
+                <extrainfo xsi:type="xsd:string"/>
+                <query xsi:type="xsd:string">{query}</query>
+            </namesp1:MRWebServices__{action}>
         '''
+        data = self.soap_envelope(data)
         ticket_list_raw = self.requesting_dict(data, action)
 
         ticket_list = []
