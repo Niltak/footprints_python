@@ -8,9 +8,9 @@ def automate_ticket_queue():
 
 
 def automate_PAL_Gaming(
+    ticket_id,
     user,
     pwd,
-    ticket_id,
     project_id=17,
     foot_connection=None):
     '''
@@ -46,9 +46,7 @@ def automate_PAL_Gaming(
         except Exception:
             pass
 
-        if not mac:
-            return ticket.id
-        return mac
+        return {'id': ticket.id, 'mac': mac}
 
 
 def search_PAL_Gaming(
@@ -99,7 +97,7 @@ def automate_PAL_Gaming_tickets(
     ticket_mac_list = []
     for ticket in ticket_list:
         ticket_details = automate_PAL_Gaming(
-            user, pwd, ticket.id, foot_connection=foot_connection)
+            ticket.id, user, pwd, foot_connection=foot_connection)
         ticket_mac_list.append(ticket_details)
     
     return ticket_mac_list
