@@ -1,6 +1,6 @@
 import re
 import logging as log
-import Footprints_Python as foot
+import footprints as foot
 
 
 def automate_ticket_queue():
