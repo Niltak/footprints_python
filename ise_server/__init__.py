@@ -1,9 +1,7 @@
-import base64
 from pyiseers import ERS
-import aa_global as kat
 
 
-class Connection(object):
+class ISE(object):
     def __init__(
         self,
         ers_user,
@@ -11,7 +9,7 @@ class Connection(object):
         ise_server='172.28.242.209') -> None:
         '''
         '''
-        ise_connection = ERS(
+        self.connection = ERS(
             ise_node=ise_server,
             ers_user=ers_user,
             ers_pass=ers_pass,
@@ -19,7 +17,6 @@ class Connection(object):
             timeout=10,
             disable_warnings=True
         )
-        return ise_connection
 
 
     def ise_endpoint_details(
@@ -28,19 +25,16 @@ class Connection(object):
         ticket_id=None) -> dict:
         '''
         '''        
-        device = self.get_endpoint(mac_address)['response']
+        device = self.connection.get_endpoint(mac_address)['response']
         if 'not found' in device:
             return {'mac': mac_address, 'id': False, 'ticket_id': ticket_id}
-        device['id_group'] = self.get_endpoint_group(device['groupId'])['response']['name']
+        device['id_group'] = self.connection.get_endpoint_group(device['groupId'])['response']['name']
         device['ticket_id'] = ticket_id
 
         return device
 
 
-if __name__ == '__main__':
-    foot = Connection(kat.user, base64.b85decode(kat.pwd()).decode('utf-8'))
-    test = foot.ise_endpoint_details('54:67:E6:38:51:B1')
-    pass
+
 
 
 # def ise_start_connection(
