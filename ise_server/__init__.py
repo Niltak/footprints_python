@@ -1,5 +1,4 @@
 from pyiseers import ERS
-import aa_global as kat
 
 
 def ise_start_connection(
