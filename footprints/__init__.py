@@ -61,7 +61,7 @@ class Connection(object):
         '''
 
 
-    def get_ticket_details(self, project_id, ticket_id):
+    def ticket_details(self, project_id, ticket_id):
         '''
         Requests information about a ticket.
         Returns Ticket(class).
@@ -86,6 +86,8 @@ class Connection(object):
         ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
         ticket.contact_title = ticket_dict['title']['#text']
         ticket.status = ticket_dict['status']['#text']
+        if '#text' in ticket_dict['assignees'].keys():
+            ticket.assigned = ticket_dict['assignees']['#text']
         if '#text' in ticket_dict['Campus__bBuilding'].keys():
             ticket.building = ticket_dict['Campus__bBuilding']['#text']
         if '#text' in ticket_dict['description'].keys():
@@ -131,6 +133,44 @@ class Connection(object):
             ticket_list.append(ticket)
 
         return ticket_list
+
+
+    def ticket_create(
+        self,
+        project_id,
+        title,
+        details,
+        priority='5',
+        status='Assigned',
+        assignees='ITAP_NETWORKING',
+        email_cc=None,
+        extra_args=None):
+        '''
+        '''
+        action = 'createIssue'
+        data = f'''
+            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
+                <user xsi:type="xsd:string">{self.user}</user>
+                <password xsi:type="xsd:string">{self.pwd}</password>
+                <extrainfo xsi:type="xsd:string"/>
+                <args xsi:type="namesp2:SOAPStruct">
+                    <projectID xsi:type="xsd:int">{project_id}</projectID>
+                    <title xsi:type="xsd:string">{title}</title>
+                    <description xsi:type="xsd:string">{details}</description>
+                    <status xsi:type="xsd:string">{status}</status>
+                    <priorityNumber xsi:type="xsd:string">{priority}</priorityNumber>
+                </args>
+            </namesp1:MRWebServices__{action}>
+        '''
+        pass
+
+
+    def ticket_update():
+        pass
+
+
+    def ticket_delete():
+        pass
 
 
 class Ticket(dict):
