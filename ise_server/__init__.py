@@ -18,13 +18,13 @@ def ise_start_connection(
     return ise_connection
 
 
-def ise_device_details(device_name, ise_connection) -> dict:
+def device_details(device_name, ise_connection) -> dict:
     '''
     '''
     return ise_connection.get_device(device_name)['response']
 
 
-def ise_endpoint_details(
+def endpoint_details(
     mac_address,
     ise_connection,
     ticket_id=None) -> dict:
@@ -39,13 +39,13 @@ def ise_endpoint_details(
     return device
 
 
-def ise_endpoint_groups(ise_connection) -> dict:
+def endpoint_groups(ise_connection) -> dict:
     '''
     '''
     return ise_connection.get_endpoint_groups(size=100)['response']
 
 
-def ise_endpoint_list_details(
+def endpoint_list_details(
     ticket_list,
     ers_user,
     ers_pass,
@@ -57,7 +57,7 @@ def ise_endpoint_list_details(
     ise_endpoint_list = []
     for ticket in ticket_list[:]:
         if ticket['mac']:
-            ise_endpoint_list.append(ise_endpoint_details(
+            ise_endpoint_list.append(endpoint_details(
                 ticket['mac'], ise_connection, ticket_id=ticket['id']))
 
     return ise_endpoint_list

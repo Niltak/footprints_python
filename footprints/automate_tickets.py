@@ -18,7 +18,7 @@ def automate_PAL_Gaming(
     if not foot_connection:
         foot_connection = foot.Connection(
             'support.purdue.edu', user, pwd)
-    ticket = foot_connection.get_ticket_details(project_id, ticket_id)
+    ticket = foot_connection.ticket_details(project_id, ticket_id)
     
     try:
         ticket.info()
