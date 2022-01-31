@@ -1,6 +1,9 @@
 '''
 First Attempt at a class
 '''
+from ast import Dict
+from xxlimited import Str
+from flask import Request
 import requests
 from base64 import b64decode
 import xmltodict
@@ -20,7 +23,7 @@ class Connection(object):
         self.pwd = pwd
 
 
-    def requesting(self, data, action):
+    def requesting(self, data, action) -> requests.request:
         '''
         Submits request to the footprints server.
         Returns response.
@@ -34,7 +37,7 @@ class Connection(object):
         return requests.request('POST', self.url, headers=headers, data=data)
 
 
-    def requesting_dict(self, data, action):
+    def requesting_dict(self, data, action) -> dict:
         '''
         Converts requested response to a dictionary for easier manipulation.
         Returns a filtered response
@@ -43,7 +46,7 @@ class Connection(object):
         return response['soap:Envelope']['soap:Body'][f'namesp1:MRWebServices__{action}Response']['return']
 
 
-    def soap_envelope(self, data):
+    def soap_envelope(self, data) -> str:
         '''
         Template of the required information around the data requested.
         Returns data inside the template.
@@ -61,7 +64,7 @@ class Connection(object):
         '''
 
 
-    def ticket_details(self, project_id, ticket_id):
+    def ticket_details(self, project_id, ticket_id) -> object:
         '''
         Requests information about a ticket.
         Returns Ticket(class).
@@ -103,7 +106,7 @@ class Connection(object):
         return ticket
 
 
-    def search_tickets(self, key, project_id):
+    def search_tickets(self, key, project_id) -> list:
         '''
         Requests information about a key word in the title of all the tickets.
         Returns a list of Tickets(class).
