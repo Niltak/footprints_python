@@ -1,4 +1,4 @@
-import footprints as foot
+import footprints_v11 as foot
 
 
 def ticket_details(user, pwd, project_id, ticket_id):
