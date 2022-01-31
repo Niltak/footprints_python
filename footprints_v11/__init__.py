@@ -83,25 +83,22 @@ class Connection(object):
         
         ticket = Ticket(ticket_id)
         ticket.title = ticket_dict['title']['#text']
-        ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
-        ticket.contact_title = ticket_dict['Position__bTitle']['#text']
         ticket.status = ticket_dict['status']['#text']
-        if '#text' in ticket_dict['assignees'].keys():
-            ticket.assigned = ticket_dict['assignees']['#text']
-        if '#text' in ticket_dict['Campus__bBuilding'].keys():
-            ticket.building = ticket_dict['Campus__bBuilding']['#text']
-        if '#text' in ticket_dict['description'].keys():
-            ticket.notes = ticket_dict['description']['#text']
-        if '#text' in ticket_dict['Tech__bNotes'].keys():
-            if 'xsd:base64Binary' in ticket_dict['Tech__bNotes'].values():
-                ticket.full_notes = str(b64decode(ticket_dict['alldescs']['#text']))
-            else:
-                ticket.tech_notes = ticket_dict['Tech__bNotes']['#text']
-        if '#text' in ticket_dict['alldescs'].keys():
-            if 'xsd:base64Binary' in ticket_dict['alldescs'].values():
-                ticket.full_notes = str(b64decode(ticket_dict['alldescs']['#text']))
-            else:
-                ticket.full_notes = ticket_dict['alldescs']['#text']
+        ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
+        ticket_details = [
+            {'field': 'Position__bTitle', 'name': 'contact_title'},
+            {'field': 'assignees', 'name': 'assigned'},
+            {'field': 'Campus__bBuilding', 'name': 'building'},
+            {'field': 'description', 'name': 'notes'},
+            {'field': 'Tech__bNotes', 'name': 'tech_notes'},
+            {'field': 'alldescs', 'name': 'full_notes'}
+        ]
+        for detail in ticket_details:
+            if '#text' in ticket_dict[detail['field']].keys():
+                ticket_text = ticket_dict[detail['field']]['#text']
+                if 'xsd:base64Binary' in ticket_dict[detail['field']].values():
+                    ticket_text = str(b64decode(ticket_text))
+                setattr(ticket, detail['name'], ticket_text)
 
         return ticket
 
