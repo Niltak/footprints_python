@@ -1,9 +1,6 @@
 '''
 First Attempt at a class
 '''
-from ast import Dict
-from xxlimited import Str
-from flask import Request
 import requests
 from base64 import b64decode
 import xmltodict
