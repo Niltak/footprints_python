@@ -84,7 +84,7 @@ class Connection(object):
         ticket = Ticket(ticket_id)
         ticket.title = ticket_dict['title']['#text']
         ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
-        ticket.contact_title = ticket_dict['title']['#text']
+        ticket.contact_title = ticket_dict['Position__bTitle']['#text']
         ticket.status = ticket_dict['status']['#text']
         if '#text' in ticket_dict['assignees'].keys():
             ticket.assigned = ticket_dict['assignees']['#text']
