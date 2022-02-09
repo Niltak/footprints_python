@@ -139,11 +139,22 @@ class Connection(object):
         details,
         priority='5',
         status='Assigned',
-        assignees='ITAP_NETWORKING',
-        email_cc=None,
-        extra_args=None):
+        assignees=['ITAP_NETWORKING'],
+        type='Incident',
+        category='Infrastructure',
+        service='Network',
+        service_offering='Wired__bCampus__bNetwork__bServices',
+        urgency='Working__bNormally',
+        impact='Minimal',
+        campus='West__bLafayette'):
         '''
         '''
+        submitter_id = self.user
+        assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
+        for assignee in assignees:
+            assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
+        assignees_data += '</assignees>'
+
         action = 'createIssue'
         data = f'''
             <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
@@ -156,13 +167,30 @@ class Connection(object):
                     <description xsi:type="xsd:string">{details}</description>
                     <status xsi:type="xsd:string">{status}</status>
                     <priorityNumber xsi:type="xsd:string">{priority}</priorityNumber>
+                    {assignees_data}
+                    <abfields>
+                        <User__bID xsi:type="xsd:string">{submitter_id}</User__bID>
+                        <Ticket__bType xsi:type="xsd:string">{type}</Ticket__bType>
+                        <Category xsi:type="xsd:string">{category}</Category>
+                        <Service xsi:type="xsd:string">{service}</Service>
+                        <Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>
+                        <Urgency xsi:type="xsd:string">{urgency}</Urgency>
+                        <Impact xsi:type="xsd:string">{impact}</Impact>
+                        <Campus xsi:type="xsd:string">{campus}</Campus>
+                    </abfields>
                 </args>
             </namesp1:MRWebServices__{action}>
         '''
+        data = self.soap_envelope(data)
+        ticket_number = self.requesting_dict(data, action)['#text']
         pass
 
 
-    def ticket_update():
+    def ticket_update(
+        self,
+        project_id):
+        '''
+        '''
         pass
 
 
