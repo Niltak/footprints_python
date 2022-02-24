@@ -1,6 +1,7 @@
 '''
 First Attempt at a class
 '''
+from turtle import title
 import requests
 from base64 import b64decode
 import xmltodict
@@ -103,14 +104,20 @@ class Connection(object):
         return ticket
 
 
-    def search_tickets(self, key, project_id) -> list:
+    def search_tickets(self, project_id, key, key_selected='title') -> list:
         '''
         Requests information about a key word in the title of all the tickets.
         Returns a list of Tickets(class).
         '''
+        if key_selected.lower() == 'title':
+            key_selected = 'mrtitle'
+        if key_selected.lower() == 'assignee':
+            key_selected = 'mrassignees'
+
+        query_where = f"{key_selected} LIKE '%{key}%'"
+        query = f"SELECT mrid, mrtitle, mrstatus, mrassignees, Date__bContained from MASTER{project_id} WHERE {query_where}"
+
         action = 'search'
-        query = f"SELECT mrid, mrtitle, mrstatus from MASTER{project_id} WHERE mrtitle LIKE '%{key}%'"
-        
         data = f'''
             <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
                 <user xsi:type="xsd:string">{self.user}</user>
@@ -140,7 +147,7 @@ class Connection(object):
         priority='5',
         status='Assigned',
         assignees=['ITAP_NETWORKING'],
-        type='Incident',
+        ticket_type='Incident',
         category='Infrastructure',
         service='Network',
         service_offering='Wired__bCampus__bNetwork__bServices',
@@ -149,7 +156,7 @@ class Connection(object):
         campus='West__bLafayette'):
         '''
         '''
-        submitter_id = self.user
+        submitter_id = self.user    # Temp
         assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
         for assignee in assignees:
             assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
@@ -168,22 +175,24 @@ class Connection(object):
                     <status xsi:type="xsd:string">{status}</status>
                     <priorityNumber xsi:type="xsd:string">{priority}</priorityNumber>
                     {assignees_data}
-                    <abfields>
+                    <abfields xsi:type="namesp2:SOAPStruct">
                         <User__bID xsi:type="xsd:string">{submitter_id}</User__bID>
-                        <Ticket__bType xsi:type="xsd:string">{type}</Ticket__bType>
+                    </abfields>
+                    <projfields xsi:type="namesp2:SOAPStruct">
+                        <Ticket__bType xsi:type="xsd:string">{ticket_type}</Ticket__bType>
                         <Category xsi:type="xsd:string">{category}</Category>
                         <Service xsi:type="xsd:string">{service}</Service>
                         <Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>
                         <Urgency xsi:type="xsd:string">{urgency}</Urgency>
                         <Impact xsi:type="xsd:string">{impact}</Impact>
                         <Campus xsi:type="xsd:string">{campus}</Campus>
-                    </abfields>
+                    </projfields>
+                    <selectContact xsi:type="xsd:string">{submitter_id}</selectContact>
                 </args>
             </namesp1:MRWebServices__{action}>
         '''
         data = self.soap_envelope(data)
-        ticket_number = self.requesting_dict(data, action)['#text']
-        pass
+        return self.requesting_dict(data, action)['#text']
 
 
     def ticket_update(
@@ -191,11 +200,58 @@ class Connection(object):
         project_id):
         '''
         '''
-        pass
+        action = 'createIssue'
+        data = f'''
+            test
+        '''
+        data = self.soap_envelope(data)
+        ticket_number = self.requesting_dict(data, action)['#text']
 
 
-    def ticket_delete():
-        pass
+    def ticket_close(
+        self,
+        project_id,
+        ticket_number,
+        close_reason='Completed__bSuccessfully',
+        assignees=['ITAP_NETWORKING'],
+        service_offering='Wired__bCampus__bNetwork__bServices',
+        campus='West__bLafayette',
+        ticket_note='Closed with footprints automation'):
+        '''
+        '''        
+        if self.user not in assignees:
+            assignees.append(self.user)
+        assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
+        for assignee in assignees:
+            assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
+        assignees_data += '</assignees>'
+
+        action = 'editIssue'
+        data = f'''
+            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
+                <user xsi:type="xsd:string">{self.user}</user>
+                <password xsi:type="xsd:string">{self.pwd}</password>
+                <extrainfo xsi:type="xsd:string"/>
+                <args xsi:type="namesp2:SOAPStruct">
+                    <projectID xsi:type="xsd:int">{project_id}</projectID>
+                    <mrID xsi:type="xsd:int">{ticket_number}</mrID>
+                    <status xsi:type="xsd:string">Resolved</status>
+                    {assignees_data}
+                    <projfields xsi:type="namesp2:SOAPStruct">
+                        <Resolution__bCode xsi:type="xsd:string">{close_reason}</Resolution__bCode>
+                        <Category xsi:type="xsd:string">Infrastructure</Category>
+                        <Service xsi:type="xsd:string">Network</Service>
+                        <Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>
+                        <Urgency xsi:type="xsd:string">Working__bNormally</Urgency>
+                        <Impact xsi:type="xsd:string">Minimal</Impact>
+                        <Campus xsi:type="xsd:string">{campus}</Campus>
+                        <Tech__bNotes xsi:type="xsd:string">{ticket_note} by {self.user}</Tech__bNotes>
+                    </projfields>
+                </args>
+            </namesp1:MRWebServices__{action}>
+        '''
+        data = self.soap_envelope(data)
+        return self.requesting(data, action)
 
 
 class Ticket(dict):
