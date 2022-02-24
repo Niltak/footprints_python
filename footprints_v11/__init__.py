@@ -1,7 +1,6 @@
 '''
 First Attempt at a class
 '''
-from turtle import title
 import requests
 from base64 import b64decode
 import xmltodict
@@ -115,7 +114,7 @@ class Connection(object):
             key_selected = 'mrassignees'
 
         query_where = f"{key_selected} LIKE '%{key}%'"
-        query = f"SELECT mrid, mrtitle, mrstatus, mrassignees, Date__bContained from MASTER{project_id} WHERE {query_where}"
+        query = f"SELECT mrid, mrtitle, mrstatus, mrassignees, mrsubmitdate, mrupdatedate from MASTER{project_id} WHERE {query_where}"
 
         action = 'search'
         data = f'''
@@ -134,6 +133,8 @@ class Connection(object):
             ticket = Ticket(ticket_raw['mrid']['#text'])
             ticket.title = ticket_raw['mrtitle']['#text']
             ticket.status = ticket_raw['mrstatus']['#text']
+            ticket.date = ticket_raw['mrsubmitdate']['#text']
+            ticket.last_update = ticket_raw['mrupdatedate']['#text']
             ticket_list.append(ticket)
 
         return ticket_list
