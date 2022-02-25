@@ -111,19 +111,18 @@ def audit_user(
     '''
     '''
     try:
-        ticket_list = foot_connection.search_tickets(
+        full_ticket_list = foot_connection.search_tickets(
             project_id, name, key_selected='assignee')
     except:
         log.debug('No new tickets found!')
         return False
 
-    for ticket in ticket_list[:]:
-        if ticket.status != 'Closed' and ticket.status != 'Resolved':
-            ticket_list.remove(ticket)
-        elif '2022-' in ticket.date or '2021-' in ticket.date and not '2021-01' in ticket.date:
-            ticket_list[ticket_list.index(ticket)] = ticket.info() 
-        else:
-            ticket_list.remove(ticket)
+    ticket_list = []
+    for ticket in full_ticket_list:
+        if ticket.status == 'Closed' or ticket.status == 'Resolved':
+            if '2022-' in ticket.date or '2021-' in ticket.date and not '2021-01' in ticket.date:
+                if ticket.type == 'Incident':
+                    ticket_list.append(ticket.info())
 
     ticket_list = sorted(ticket_list, key=lambda i: i['title'])
 
