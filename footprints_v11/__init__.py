@@ -265,53 +265,29 @@ class Connection(object):
             </namesp1:MRWebServices__{action}>
         '''
         data = self.soap_envelope(data)
-        # ticket_number = self.requesting_dict(data, action)['#text']
+        return self.requesting(data, action)
 
 
     def ticket_close(
         self,
         project_id,
         ticket_number,
-        close_reason='Completed__bSuccessfully',
-        assignees=['ITAP_NETWORKING'],
+        resolution='Completed__bSuccessfully',
+        assignees=None,
         service_offering='Wired__bCampus__bNetwork__bServices',
         campus='West__bLafayette',
-        ticket_note='Closed with footprints automation'):
+        tech_note='Closed with footprints automation'):
         '''
         '''        
-        if self.user not in assignees:
-            assignees.append(self.user)
-        assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
-        for assignee in assignees:
-            assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
-        assignees_data += '</assignees>'
-
-        action = 'editIssue'
-        data = f'''
-            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
-                <user xsi:type="xsd:string">{self.user}</user>
-                <password xsi:type="xsd:string">{self.pwd}</password>
-                <extrainfo xsi:type="xsd:string"/>
-                <args xsi:type="namesp2:SOAPStruct">
-                    <projectID xsi:type="xsd:int">{project_id}</projectID>
-                    <mrID xsi:type="xsd:int">{ticket_number}</mrID>
-                    <status xsi:type="xsd:string">Resolved</status>
-                    {assignees_data}
-                    <projfields xsi:type="namesp2:SOAPStruct">
-                        <Resolution__bCode xsi:type="xsd:string">{close_reason}</Resolution__bCode>
-                        <Category xsi:type="xsd:string">Infrastructure</Category>
-                        <Service xsi:type="xsd:string">Network</Service>
-                        <Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>
-                        <Urgency xsi:type="xsd:string">Working__bNormally</Urgency>
-                        <Impact xsi:type="xsd:string">Minimal</Impact>
-                        <Campus xsi:type="xsd:string">{campus}</Campus>
-                        <Tech__bNotes xsi:type="xsd:string">{ticket_note} by {self.user}</Tech__bNotes>
-                    </projfields>
-                </args>
-            </namesp1:MRWebServices__{action}>
-        '''
-        data = self.soap_envelope(data)
-        return self.requesting(data, action)
+        ticket_number = self.ticket_update(
+            project_id,
+            ticket_number,
+            resolution=resolution,
+            assignees=assignees,
+            service_offering=service_offering,
+            campus=campus,
+            tech_note=tech_note)
+        return ticket_number
 
 
 class Ticket(dict):
