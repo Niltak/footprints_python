@@ -200,15 +200,72 @@ class Connection(object):
 
     def ticket_update(
         self,
-        project_id):
+        project_id,
+        ticket_number,
+        priority=None,
+        status=None,
+        assignees=None,
+        ticket_type=None,
+        category=None,
+        service=None,
+        service_offering=None,
+        urgency=None,
+        impact=None,
+        campus=None,
+        tech_note=None,
+        resolution=None):
         '''
         '''
-        action = 'createIssue'
+        ticket_args = ''
+        if assignees:
+            assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
+            for assignee in assignees:
+                assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
+            assignees_data += '</assignees>'
+            ticket_args += assignees_data
+        if status:
+            ticket_args += f'<status xsi:type="xsd:string">{status}</status>'
+        if priority:
+            ticket_args += f'<priorityNumber xsi:type="xsd:string">{priority}</priorityNumber>'
+
+        ticket_fields = ''
+        if ticket_type:
+            ticket_fields += f'<Ticket__bType xsi:type="xsd:string">{ticket_type}</Ticket__bType>'
+        if category:
+            ticket_fields += f'<Category xsi:type="xsd:string">{category}</Category>'
+        if service:
+            ticket_fields += f'<Service xsi:type="xsd:string">{service}</Service>'
+        if service_offering:
+            ticket_fields += f'<Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>'
+        if urgency:
+            ticket_fields += f'<Urgency xsi:type="xsd:string">{urgency}</Urgency>'
+        if impact:
+            ticket_fields += f'<Impact xsi:type="xsd:string">{impact}</Impact>'
+        if campus:
+            ticket_fields += f'<Campus xsi:type="xsd:string">{campus}</Campus>'
+        if tech_note:
+            ticket_fields += f'<Tech__bNotes xsi:type="xsd:string">{tech_note}</Tech__bNotes>'
+        if resolution:
+            ticket_fields += f'<Resolution__bCode xsi:type="xsd:string">{resolution}</Resolution__bCode>'
+
+        action = 'editIssue'
         data = f'''
-            test
+            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
+                <user xsi:type="xsd:string">{self.user}</user>
+                <password xsi:type="xsd:string">{self.pwd}</password>
+                <extrainfo xsi:type="xsd:string"/>
+                <args xsi:type="namesp2:SOAPStruct">
+                    <projectID xsi:type="xsd:int">{project_id}</projectID>
+                    <mrID xsi:type="xsd:int">{ticket_number}</mrID>
+                    {ticket_args}
+                    <projfields xsi:type="namesp2:SOAPStruct">
+                        {ticket_fields}
+                    </projfields>
+                </args>
+            </namesp1:MRWebServices__{action}>
         '''
         data = self.soap_envelope(data)
-        ticket_number = self.requesting_dict(data, action)['#text']
+        # ticket_number = self.requesting_dict(data, action)['#text']
 
 
     def ticket_close(
