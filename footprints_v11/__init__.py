@@ -1,6 +1,3 @@
-'''
-First Attempt at a class
-'''
 import requests
 from base64 import b64decode
 import xmltodict
