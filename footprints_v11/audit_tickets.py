@@ -1,3 +1,4 @@
+import csv
 import datetime
 import logging as log
 import Footprints_Python.footprints_v11 as foot
@@ -64,26 +65,35 @@ def audit_network_team(
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
     team_list = []
-    for name in network_team:
+    for team_member in network_team:
         ticket_list = audit_user(
             foot_connection,
             project_id,
-            name,
+            team_member,
             day_range=day_range,
             ticket_type=ticket_type)
-        team_list.append({'user': name, 'tickets':len(ticket_list), 'ticket_list': ticket_list})
+        team_list.append({'user': team_member, 'tickets':len(ticket_list), 'ticket_list': ticket_list})
 
-    network_team_numbers = []
-    for name in team_list:
-        network_team_numbers.append({name['user']: name['tickets']})
-    
-    team_list = {'user_list': network_team_numbers, 'ticket_details': team_list}
+    team_list_numbers = []
+    for team_member in team_list:
+        team_list_numbers.append({team_member['user']: team_member['tickets']})
+    team_list_full = {'user_list': team_list_numbers, 'ticket_details': team_list}   
 
     if not debug:
+        with open('test.csv', 'w', newline='') as csv_file:
+            fieldnames = ['id', 'title', 'status', 'type', 'date', 'last_update']
+            writer = csv.DictWriter(csv_file, fieldnames, dialect='excel')
+            for team_member in team_list:
+                csv_file.write(f"{team_member['user']}\n")
+                writer.writeheader()
+                writer.writerows(team_member['ticket_list'])
+                csv_file.write('\n')
+
+    if debug:
         ks.file_create(
             f'audit_team_tickets--{datetime.date.today().strftime("%m-%d-%Y")}',
             'logs/audit_tickets/',
-            team_list,
+            team_list_full,
             'yml',
         )
 
