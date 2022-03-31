@@ -1,5 +1,4 @@
 import re
-import yaml
 import logging as log
 import footprints_v11 as foot
 
