@@ -30,23 +30,39 @@ def ticket_close(
     pwd,
     project_id,
     ticket_number,
-    resolution='Completed__bSuccessfully',
+    priority=None,
+    status='Resolved',
     assignees=None,
-    service_offering='Wired__bCampus__bNetwork__bServices',
+    ticket_type=None,
+    category='Infrastructure',
+    service='Network',
+    service_offering='Custom Network Solutions',
+    urgency='Working__bNormally',
+    impact='Minimal',
     campus='West__bLafayette',
-    tech_note='Closed with footprints automation'):
+    tech_note='Closed with footprints automation',
+    resolution='Completed',
+    select_contact=None):
     '''
     '''
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
-    ticket_return = foot_connection.ticket_close(
-        project_id, 
-        ticket_number, 
-        resolution=resolution,
+    ticket_return = foot_connection.ticket_update(
+        project_id,
+        ticket_number,
+        priority=priority,
+        status=status,
         assignees=assignees,
+        ticket_type=ticket_type,
+        category=category,
+        service=service,
         service_offering=service_offering,
+        urgency=urgency,
+        impact=impact,
         campus=campus,
-        tech_note=tech_note)
+        tech_note=tech_note,
+        resolution=resolution,
+        select_contact=select_contact)
 
     return ticket_return
 
