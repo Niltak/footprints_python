@@ -81,7 +81,8 @@ class Connection(object):
         ticket = Ticket(ticket_id)
         ticket.title = ticket_dict['title']['#text']
         ticket.status = ticket_dict['status']['#text']
-        ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
+        if '#text' in ticket_dict['First__bName'].keys():
+            ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
         ticket_details = [
             {'field': 'Position__bTitle', 'name': 'contact_title'},
             {'field': 'assignees', 'name': 'assigned'},
@@ -223,7 +224,8 @@ class Connection(object):
         impact=None,
         campus=None,
         tech_note=None,
-        resolution=None):
+        resolution=None,
+        select_contact=None):
         '''
         '''
         ticket_args = ''
@@ -237,6 +239,8 @@ class Connection(object):
             ticket_args += f'<status xsi:type="xsd:string">{status}</status>'
         if priority:
             ticket_args += f'<priorityNumber xsi:type="xsd:string">{priority}</priorityNumber>'
+        if select_contact:
+            ticket_args += f'<selectContact xsi:type="xsd:string">{select_contact}</selectContact>'
 
         ticket_fields = ''
         if ticket_type:
@@ -256,7 +260,8 @@ class Connection(object):
         if tech_note:
             ticket_fields += f'<Tech__bNotes xsi:type="xsd:string">{tech_note}</Tech__bNotes>'
         if resolution:
-            ticket_fields += f'<Resolution__bCode xsi:type="xsd:string">{resolution}</Resolution__bCode>'
+            ticket_fields += f'<Resolution__bNotice xsi:type="xsd:string">{resolution}</Resolution__bNotice>'
+        
 
         action = 'editIssue'
         data = f'''
@@ -282,21 +287,35 @@ class Connection(object):
         self,
         project_id,
         ticket_number,
-        resolution='Completed__bSuccessfully',
+        status='Resolved',
+        resolution='Completed',
         assignees=None,
-        service_offering='Wired__bCampus__bNetwork__bServices',
+        ticket_type=None,
+        category='Infrastructure',
+        service='Network',
+        service_offering='Custom Network Solutions',
+        urgency='Working__bNormally',
+        impact='Minimal',
         campus='West__bLafayette',
-        tech_note='Closed with footprints automation'):
+        tech_note='Closed with footprints automation',
+        select_contact=None):
         '''
         '''        
         ticket_number = self.ticket_update(
             project_id,
             ticket_number,
+            status=status,
             resolution=resolution,
             assignees=assignees,
+            ticket_type=ticket_type,
+            category=category,
+            service=service,
             service_offering=service_offering,
+            urgency=urgency,
+            impact=impact,
             campus=campus,
-            tech_note=tech_note)
+            tech_note=tech_note,
+            select_contact=select_contact)
         return ticket_number
 
 

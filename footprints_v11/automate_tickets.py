@@ -104,5 +104,76 @@ def automate_PAL_Gaming_tickets(
     return ticket_mac_list
 
 
+def auto_close(
+    user,
+    pwd,
+    project_id,
+    ticket_id_list,
+    status='Resolved',
+    ticket_type='Incident',
+    category='Infrastructure',
+    service='Network',
+    service_offering='iLight',
+    urgency='Working__bNormally',
+    impact='Minimal',
+    campus='West__bLafayette',
+    tech_note='Closed with footprints automation',
+    resolution='Completed',
+    select_contact='jpublic'):
+    '''
+    '''
+    if not isinstance(ticket_id_list, list):
+        ticket_id_list = [ticket_id_list]
+
+    foot_connection = foot.Connection(
+        'support.purdue.edu', user, pwd)
+    
+    ticket_return_list = []
+    for ticket_id in ticket_id_list:
+        ticket_return_list.append(
+            foot_connection.ticket_update(
+                project_id,
+                ticket_id,
+                status=status,
+                ticket_type=ticket_type,
+                category=category,
+                service=service,
+                service_offering=service_offering,
+                urgency=urgency,
+                impact=impact,
+                campus=campus,
+                tech_note=tech_note,
+                resolution=resolution,
+                select_contact=select_contact))
+
+    return ticket_return_list
+
+
+def auto_close_WAN(
+    user,
+    pwd,
+    project_id,
+    ticket_id_list,
+    service_offering='WAN__bInternet__bServices'):
+    '''
+    '''
+    return auto_close(
+        user, pwd, project_id, ticket_id_list,
+        service_offering=service_offering)
+
+
+def auto_close_iLight(
+    user,
+    pwd,
+    project_id,
+    ticket_id_list,
+    service_offering='iLight'):
+    '''
+    '''
+    return auto_close(
+        user, pwd, project_id, ticket_id_list,
+        service_offering=service_offering)
+
+
 if __name__ == "__main__":
     pass
