@@ -97,6 +97,12 @@ class Connection(object):
                     ticket_text = str(b64decode(ticket_text))
                 setattr(ticket, detail['name'], ticket_text)
 
+        if ticket.assigned: # Turn ticket.assigned into a list and remove cc'ed users
+            ticket.assigned = ticket.assigned.split(' ')
+            for assigned in ticket.assigned[:]:
+                if 'CC:' in assigned:
+                    ticket.assigned.remove(assigned)
+
         return ticket
 
 
@@ -127,6 +133,13 @@ class Connection(object):
 
         ticket_list = []
         for ticket_raw in ticket_list_raw['item']:
+            if key_selected == "mrassignees":
+                ticket_assigned = ticket_raw['mrassignees']['#text'].split(' ')
+                for assigned in ticket_assigned[:]:
+                    if 'CC:' in assigned:
+                        ticket_assigned.remove(assigned)
+                if key not in ticket_assigned:
+                    continue
             ticket = Ticket(ticket_raw['mrid']['#text'])
             ticket.title = ticket_raw['mrtitle']['#text']
             ticket.status = ticket_raw['mrstatus']['#text']
